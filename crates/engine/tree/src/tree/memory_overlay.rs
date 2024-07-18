@@ -3,6 +3,7 @@ use reth_errors::ProviderResult;
 use reth_primitives::{Account, Address, BlockNumber, Bytecode, StorageKey, StorageValue, B256};
 use reth_provider::{
     AccountReader, BlockHashReader, StateProofProvider, StateProvider, StateRootProvider,
+    StateWitnessProvider,
 };
 use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState};
 
@@ -116,6 +117,21 @@ where
         let mut state = self.hashed_post_state.clone();
         state.extend(hashed_state.clone());
         self.historical.hashed_proof(&state, address, slots)
+    }
+}
+
+impl<H> StateWitnessProvider for MemoryOverlayStateProvider<H>
+where
+    H: StateWitnessProvider + Send,
+{
+    fn hashed_witness(
+        &self,
+        hashed_state: &HashedPostState,
+        targets: Vec<(Address, Vec<B256>)>,
+    ) -> ProviderResult<reth_trie::StateWitness> {
+        let mut state = self.hashed_post_state.clone();
+        state.extend(hashed_state.clone());
+        self.historical.hashed_witness(&state, targets)
     }
 }
 

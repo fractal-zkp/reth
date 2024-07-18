@@ -102,7 +102,7 @@ where
                         target_accounts.iter().find(|(n, _, _)| n == &nibbles)
                     {
                         let (storage_root, storage_proofs) =
-                            self.storage_root_with_witness(hashed_address, &slots)?;
+                            self.storage_root_with_witness(hashed_address, slots)?;
                         storage_witnesses.push(StorageWitness {
                             address: *address,
                             storage_root,
@@ -185,8 +185,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::super::proof::tests::{convert_to_proof, TEST_SPEC, insert_genesis};
-    use super::*;
+    use super::{
+        super::proof::tests::{convert_to_proof, insert_genesis, TEST_SPEC},
+        *,
+    };
     use reth_chainspec::HOLESKY;
     use reth_provider::test_utils::create_test_provider_factory;
     use std::str::FromStr;
@@ -252,8 +254,8 @@ mod tests {
                 accounts_witness: expected_proof,
                 storage_witnesses: addresses
                     .into_iter()
-                    .map(|adddress| StorageWitness {
-                        address: Address::from_str(adddress).unwrap(),
+                    .map(|address| StorageWitness {
+                        address: Address::from_str(address).unwrap(),
                         storage_root: EMPTY_ROOT_HASH,
                         storage_witness: vec![],
                     })
@@ -333,8 +335,7 @@ mod tests {
                 address: target,
                 storage_root: B256::from_str("0x556a482068355939c95a3412bdb21213a301483edb1b64402fb66ac9f3583599")
                         .unwrap(),
-                storage_witness: 
-                    convert_to_proof([
+                storage_witness: convert_to_proof([
                         "0xf9019180a0aafd5b14a6edacd149e110ba6776a654f2dbffca340902be933d011113f2750380a0a502c93b1918c4c6534d4593ae03a5a23fa10ebc30ffb7080b297bff2446e42da02eb2bf45fd443bd1df8b6f9c09726a4c6252a0f7896a131a081e39a7f644b38980a0a9cf7f673a0bce76fd40332afe8601542910b48dea44e93933a3e5e930da5d19a0ddf79db0a36d0c8134ba143bcb541cd4795a9a2bae8aca0ba24b8d8963c2a77da0b973ec0f48f710bf79f63688485755cbe87f9d4c68326bb83c26af620802a80ea0f0855349af6bf84afc8bca2eda31c8ef8c5139be1929eeb3da4ba6b68a818cb0a0c271e189aeeb1db5d59d7fe87d7d6327bbe7cfa389619016459196497de3ccdea0e7503ba5799e77aa31bbe1310c312ca17b2c5bcc8fa38f266675e8f154c2516ba09278b846696d37213ab9d20a5eb42b03db3173ce490a2ef3b2f3b3600579fc63a0e9041059114f9c910adeca12dbba1fef79b2e2c8899f2d7213cd22dfe4310561a047c59da56bb2bf348c9dd2a2e8f5538a92b904b661cfe54a4298b85868bbe4858080",
                         "0xf891a090bacef44b189ddffdc5f22edc70fe298c58e5e523e6e1dfdf7dbc6d657f7d1b80a026eed68746028bc369eb456b7d3ee475aa16f34e5eaa0c98fdedb9c59ebc53b0808080a09ce86197173e14e0633db84ce8eea32c5454eebe954779255644b45b717e8841808080a0328c7afb2c58ef3f8c4117a8ebd336f1a61d24591067ed9c5aae94796cac987d808080808080",
                         "0xf85180a0776aa456ba9c5008e03b82b841a9cf2fc1e8578cfacd5c9015804eae315f17fb80808080808080808080808080a072e3e284d47badbb0a5ca1421e1179d3ea90cc10785b26b74fb8a81f0f9e841880",

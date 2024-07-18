@@ -4,7 +4,7 @@ use alloy_primitives::{Address, Bytes, B256};
 use alloy_trie::EMPTY_ROOT_HASH;
 
 /// The state witness with the relevant account and storage proofs.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct StateWitness {
     /// The state root hash.
     pub state_root: B256,
@@ -27,7 +27,7 @@ impl Default for StateWitness {
 }
 
 /// The storage witness with the relevant storage root and storage proofs.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct StorageWitness {
     /// The address associated with the storage.
     pub address: Address,
