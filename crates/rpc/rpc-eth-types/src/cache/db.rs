@@ -42,6 +42,16 @@ impl<'a> reth_provider::StateProofProvider for StateProviderTraitObjWrapper<'a> 
     }
 }
 
+impl<'a> reth_provider::StateWitnessProvider for StateProviderTraitObjWrapper<'a> {
+    fn hashed_witness(
+        &self,
+        hashed_state: &reth_trie::HashedPostState,
+        targets: Vec<(revm_primitives::Address, Vec<B256>)>,
+    ) -> reth_errors::ProviderResult<reth_trie::StateWitness> {
+        self.0.hashed_witness(hashed_state, targets)
+    }
+}
+
 impl<'a> reth_provider::AccountReader for StateProviderTraitObjWrapper<'a> {
     fn basic_account(
         &self,

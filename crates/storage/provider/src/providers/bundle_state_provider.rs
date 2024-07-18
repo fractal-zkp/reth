@@ -1,10 +1,11 @@
 use crate::{
     AccountReader, BlockHashReader, ExecutionDataProvider, StateProvider, StateRootProvider,
+    StateWitnessProvider,
 };
 use reth_primitives::{Account, Address, BlockNumber, Bytecode, B256};
 use reth_storage_api::StateProofProvider;
 use reth_storage_errors::provider::ProviderResult;
-use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState};
+use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState, StateWitness};
 use revm::db::BundleState;
 
 /// A state provider that resolves to data from either a wrapped [`crate::ExecutionOutcome`]
@@ -111,6 +112,21 @@ impl<SP: StateProvider, EDP: ExecutionDataProvider> StateProofProvider
         let mut state = HashedPostState::from_bundle_state(&bundle_state.state);
         state.extend(hashed_state.clone());
         self.state_provider.hashed_proof(&state, address, slots)
+    }
+}
+
+impl<SP: StateProvider, EDP: ExecutionDataProvider> StateWitnessProvider
+    for BundleStateProvider<SP, EDP>
+{
+    fn hashed_witness(
+        &self,
+        hashed_state: &HashedPostState,
+        targets: Vec<(Address, Vec<B256>)>,
+    ) -> ProviderResult<StateWitness> {
+        let bundle_state = self.block_execution_data_provider.execution_outcome().state();
+        let mut state = HashedPostState::from_bundle_state(&bundle_state.state);
+        state.extend(hashed_state.clone());
+        self.state_provider.hashed_witness(&state, targets)
     }
 }
 

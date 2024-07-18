@@ -53,6 +53,9 @@ pub use progress::{IntermediateStateRootState, StateRootProgress};
 /// Trie calculation stats.
 pub mod stats;
 
+/// State witness generation.
+pub mod witness;
+
 // re-export for convenience
 pub use reth_trie_common::*;
 

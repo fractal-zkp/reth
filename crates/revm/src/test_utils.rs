@@ -3,9 +3,10 @@ use reth_primitives::{
 };
 use reth_storage_api::{
     AccountReader, BlockHashReader, StateProofProvider, StateProvider, StateRootProvider,
+    StateWitnessProvider,
 };
 use reth_storage_errors::provider::ProviderResult;
-use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState};
+use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState, StateWitness};
 use std::collections::HashMap;
 
 /// Mock state for testing
@@ -85,6 +86,16 @@ impl StateProofProvider for StateProviderTest {
         _slots: &[B256],
     ) -> ProviderResult<AccountProof> {
         unimplemented!("proof generation is not supported")
+    }
+}
+
+impl StateWitnessProvider for StateProviderTest {
+    fn hashed_witness(
+        &self,
+        _hashed_state: &HashedPostState,
+        _targets: Vec<(Address, Vec<B256>)>,
+    ) -> ProviderResult<StateWitness> {
+        unimplemented!("witness generation is not supported")
     }
 }
 

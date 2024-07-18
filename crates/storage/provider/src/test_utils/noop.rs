@@ -14,7 +14,7 @@ use reth_primitives::{
 };
 use reth_prune_types::{PruneCheckpoint, PruneSegment};
 use reth_stages_types::{StageCheckpoint, StageId};
-use reth_storage_api::StateProofProvider;
+use reth_storage_api::{StateProofProvider, StateWitnessProvider};
 use reth_storage_errors::provider::ProviderResult;
 use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState};
 use revm::primitives::{BlockEnv, CfgEnvWithHandlerCfg};
@@ -332,6 +332,16 @@ impl StateProofProvider for NoopProvider {
         _slots: &[B256],
     ) -> ProviderResult<AccountProof> {
         Ok(AccountProof::new(address))
+    }
+}
+
+impl StateWitnessProvider for NoopProvider {
+    fn hashed_witness(
+        &self,
+        _hashed_state: &HashedPostState,
+        _targets: Vec<(Address, Vec<B256>)>,
+    ) -> ProviderResult<reth_trie::StateWitness> {
+        Ok(reth_trie::StateWitness::default())
     }
 }
 

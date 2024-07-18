@@ -15,7 +15,7 @@ use reth_primitives::{
     SealedHeader, StorageKey, StorageValue, TransactionMeta, TransactionSigned,
     TransactionSignedNoHash, TxHash, TxNumber, Withdrawal, Withdrawals, B256, U256,
 };
-use reth_storage_api::StateProofProvider;
+use reth_storage_api::{StateProofProvider, StateWitnessProvider};
 use reth_storage_errors::provider::{ProviderError, ProviderResult};
 use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState};
 use revm::primitives::{BlockEnv, CfgEnvWithHandlerCfg};
@@ -559,6 +559,16 @@ impl StateProofProvider for MockEthProvider {
         _slots: &[B256],
     ) -> ProviderResult<AccountProof> {
         Ok(AccountProof::new(address))
+    }
+}
+
+impl StateWitnessProvider for MockEthProvider {
+    fn hashed_witness(
+        &self,
+        _hashed_state: &HashedPostState,
+        _targets: Vec<(Address, Vec<B256>)>,
+    ) -> ProviderResult<reth_trie::StateWitness> {
+        Ok(reth_trie::StateWitness::default())
     }
 }
 
