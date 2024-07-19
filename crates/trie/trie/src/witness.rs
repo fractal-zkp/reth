@@ -29,7 +29,7 @@ pub struct Witness<'a, TX, H> {
 }
 
 impl<'a, TX, H> Witness<'a, TX, H> {
-    /// Create a new [Proof] instance.
+    /// Create a new [Witness] instance.
     pub fn new(tx: &'a TX, hashed_cursor_factory: H) -> Self {
         Self { tx, hashed_cursor_factory, prefix_sets: TriePrefixSetsMut::default() }
     }
@@ -47,7 +47,7 @@ impl<'a, TX, H> Witness<'a, TX, H> {
 }
 
 impl<'a, TX> Witness<'a, TX, &'a TX> {
-    /// Create a new [Proof] instance from database transaction.
+    /// Create a new [Witness] instance from database transaction.
     pub fn from_tx(tx: &'a TX) -> Self {
         Self::new(tx, tx)
     }
