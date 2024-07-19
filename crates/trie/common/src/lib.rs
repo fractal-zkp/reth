@@ -30,4 +30,7 @@ pub use proofs::{AccountProof, StorageProof};
 
 pub mod root;
 
+mod witness;
+pub use witness::{StateWitness, StorageWitness};
+
 pub use alloy_trie::{nodes::*, proof, BranchNodeCompact, HashBuilder, TrieMask, EMPTY_ROOT_HASH};

@@ -1,6 +1,7 @@
 use crate::{
     providers::{state::macros::delegate_provider_impls, StaticFileProvider},
     AccountReader, BlockHashReader, ProviderError, StateProvider, StateRootProvider,
+    StateWitnessProvider,
 };
 use reth_db::{tables, BlockNumberList};
 use reth_db_api::{
@@ -15,7 +16,7 @@ use reth_primitives::{
 };
 use reth_storage_api::StateProofProvider;
 use reth_storage_errors::provider::ProviderResult;
-use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState};
+use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState, StateWitness};
 use std::fmt::Debug;
 
 /// State provider for a given block number which takes a tx reference.
@@ -286,6 +287,21 @@ impl<'b, TX: DbTx> StateProofProvider for HistoricalStateProviderRef<'b, TX> {
         revert_state.extend(hashed_state.clone());
         revert_state
             .account_proof(self.tx, address, slots)
+            .map_err(|err| ProviderError::Database(err.into()))
+    }
+}
+
+impl<'b, TX: DbTx> StateWitnessProvider for HistoricalStateProviderRef<'b, TX> {
+    /// Get state witness for the given targets.
+    fn hashed_witness(
+        &self,
+        hashed_state: &HashedPostState,
+        targets: Vec<(Address, Vec<B256>)>,
+    ) -> ProviderResult<StateWitness> {
+        let mut revert_state = self.revert_state()?;
+        revert_state.extend(hashed_state.clone());
+        revert_state
+            .state_witness(self.tx, targets)
             .map_err(|err| ProviderError::Database(err.into()))
     }
 }

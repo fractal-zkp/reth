@@ -26,6 +26,9 @@ pub(crate) use delegate_impls_to_as_ref;
 /// [`AccountReader`](crate::AccountReader)
 /// [`BlockHashReader`](crate::BlockHashReader)
 /// [`StateProvider`](crate::StateProvider)
+/// [`StateRootProvider`](crate::StateRootProvider)
+/// [`StateProofProvider`](crate::StateProofProvider)
+/// [`StateWitnessProvider`](crate::StateWitnessProvider)
 macro_rules! delegate_provider_impls {
     ($target:ty $(where [$($generics:tt)*])?) => {
         $crate::providers::state::macros::delegate_impls_to_as_ref!(
@@ -50,6 +53,10 @@ macro_rules! delegate_provider_impls {
             StateProofProvider $(where [$($generics)*])? {
                 fn proof(&self, state: &revm::db::BundleState, address: reth_primitives::Address, slots: &[reth_primitives::B256]) -> reth_storage_errors::provider::ProviderResult<reth_trie::AccountProof>;
                 fn hashed_proof(&self, state: &reth_trie::HashedPostState, address: reth_primitives::Address, slots: &[reth_primitives::B256]) -> reth_storage_errors::provider::ProviderResult<reth_trie::AccountProof>;
+            }
+            StateWitnessProvider $(where [$($generics)*])? {
+                fn witness(&self, state: &revm::db::BundleState, targets: Vec<(reth_primitives::Address, Vec<reth_primitives::B256>)>) -> reth_storage_errors::provider::ProviderResult<reth_trie::StateWitness>;
+                fn hashed_witness(&self, state: &reth_trie::HashedPostState, targets: Vec<(reth_primitives::Address, Vec<reth_primitives::B256>)>) -> reth_storage_errors::provider::ProviderResult<reth_trie::StateWitness>;
             }
         );
     }

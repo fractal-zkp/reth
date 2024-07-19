@@ -1,6 +1,6 @@
 use reth_primitives::{Address, B256};
 use reth_storage_errors::provider::ProviderResult;
-use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState};
+use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState, StateWitness};
 use revm::db::BundleState;
 
 /// A type that can compute the state root of a given post state.
@@ -62,4 +62,25 @@ pub trait StateProofProvider: Send + Sync {
         address: Address,
         slots: &[B256],
     ) -> ProviderResult<AccountProof>;
+}
+
+/// A type that can generate state witnesses on top of a given post state.
+#[auto_impl::auto_impl(&, Box, Arc)]
+pub trait StateWitnessProvider: Send + Sync {
+    /// Get state witness of target keys in the `BundleState` on top of the current state.
+    fn witness(
+        &self,
+        state: &BundleState,
+        targets: Vec<(Address, Vec<B256>)>,
+    ) -> ProviderResult<StateWitness> {
+        let hashed_state = HashedPostState::from_bundle_state(&state.state);
+        self.hashed_witness(&hashed_state, targets)
+    }
+
+    /// Get state witness of target keys in the `HashedPostState` on top of the current state.
+    fn hashed_witness(
+        &self,
+        hashed_state: &HashedPostState,
+        targets: Vec<(Address, Vec<B256>)>,
+    ) -> ProviderResult<StateWitness>;
 }

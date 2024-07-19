@@ -183,7 +183,7 @@ where
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     use crate::StateRoot;
     use once_cell::sync::Lazy;
@@ -205,7 +205,7 @@ mod tests {
 
         All expected testspec results were obtained from querying proof RPC on the running geth instance `geth init crates/trie/testdata/proof-genesis.json && geth --http`.
     */
-    static TEST_SPEC: Lazy<Arc<ChainSpec>> = Lazy::new(|| {
+    pub(crate) static TEST_SPEC: Lazy<Arc<ChainSpec>> = Lazy::new(|| {
         ChainSpec {
             chain: Chain::from_id(12345),
             genesis: serde_json::from_str(include_str!("../testdata/proof-genesis.json"))
@@ -215,11 +215,11 @@ mod tests {
         .into()
     });
 
-    fn convert_to_proof<'a>(path: impl IntoIterator<Item = &'a str>) -> Vec<Bytes> {
+    pub(crate) fn convert_to_proof<'a>(path: impl IntoIterator<Item = &'a str>) -> Vec<Bytes> {
         path.into_iter().map(Bytes::from_str).collect::<Result<Vec<_>, _>>().unwrap()
     }
 
-    fn insert_genesis<DB: Database>(
+    pub(crate) fn insert_genesis<DB: Database>(
         provider_factory: &ProviderFactory<DB>,
         chain_spec: Arc<ChainSpec>,
     ) -> ProviderResult<B256> {

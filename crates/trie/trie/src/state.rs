@@ -3,6 +3,7 @@ use crate::{
     prefix_set::{PrefixSetMut, TriePrefixSetsMut},
     proof::Proof,
     updates::TrieUpdates,
+    witness::Witness,
     Nibbles, StateRoot,
 };
 use itertools::Itertools;
@@ -15,7 +16,7 @@ use reth_db_api::{
 };
 use reth_execution_errors::StateRootError;
 use reth_primitives::{keccak256, Account, Address, BlockNumber, B256, U256};
-use reth_trie_common::AccountProof;
+use reth_trie_common::{AccountProof, StateWitness};
 use revm::db::BundleAccount;
 use std::{
     collections::{hash_map, HashMap, HashSet},
@@ -269,6 +270,20 @@ impl HashedPostState {
             .with_hashed_cursor_factory(HashedPostStateCursorFactory::new(tx, &sorted))
             .with_prefix_sets_mut(prefix_sets)
             .account_proof(address, slots)
+    }
+
+    /// Generates the state proof for target accounts and slots on top of this [`HashedPostState`].
+    pub fn state_witness<TX: DbTx>(
+        &self,
+        tx: &TX,
+        targets: Vec<(Address, Vec<B256>)>,
+    ) -> Result<StateWitness, StateRootError> {
+        let sorted = self.clone().into_sorted();
+        let prefix_sets = self.construct_prefix_sets();
+        Witness::from_tx(tx)
+            .with_hashed_cursor_factory(HashedPostStateCursorFactory::new(tx, &sorted))
+            .with_prefix_sets_mut(prefix_sets)
+            .state_witness(targets)
     }
 }
 

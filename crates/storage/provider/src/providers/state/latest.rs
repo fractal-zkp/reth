@@ -10,9 +10,9 @@ use reth_db_api::{
 use reth_primitives::{
     Account, Address, BlockNumber, Bytecode, StaticFileSegment, StorageKey, StorageValue, B256,
 };
-use reth_storage_api::StateProofProvider;
+use reth_storage_api::{StateProofProvider, StateWitnessProvider};
 use reth_storage_errors::provider::{ProviderError, ProviderResult};
-use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState};
+use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState, StateWitness};
 
 /// State provider over latest state that takes tx reference.
 #[derive(Debug)]
@@ -97,6 +97,18 @@ impl<'b, TX: DbTx> StateProofProvider for LatestStateProviderRef<'b, TX> {
     ) -> ProviderResult<AccountProof> {
         Ok(hashed_state
             .account_proof(self.tx, address, slots)
+            .map_err(Into::<reth_db::DatabaseError>::into)?)
+    }
+}
+
+impl<'b, TX: DbTx> StateWitnessProvider for LatestStateProviderRef<'b, TX> {
+    fn hashed_witness(
+        &self,
+        hashed_state: &HashedPostState,
+        targets: Vec<(Address, Vec<B256>)>,
+    ) -> ProviderResult<StateWitness> {
+        Ok(hashed_state
+            .state_witness(self.tx, targets)
             .map_err(Into::<reth_db::DatabaseError>::into)?)
     }
 }
