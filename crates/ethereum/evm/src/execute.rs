@@ -72,7 +72,12 @@ where
         EthBlockExecutor::new(
             self.chain_spec.clone(),
             self.evm_config.clone(),
-            State::builder().with_database(db).with_bundle_update().without_state_clear().build(),
+            State::builder()
+                .with_database(db)
+                .with_execution_trace()
+                .with_bundle_update()
+                .without_state_clear()
+                .build(),
         )
     }
 }
@@ -382,7 +387,13 @@ where
         // NOTE: we need to merge keep the reverts for the bundle retention
         self.state.merge_transitions(BundleRetention::Reverts);
 
-        Ok(BlockExecutionOutput { state: self.state.take_bundle(), receipts, requests, gas_used })
+        Ok(BlockExecutionOutput {
+            state: self.state.take_bundle(),
+            trace: self.state.take_execution_trace(),
+            receipts,
+            requests,
+            gas_used,
+        })
     }
 }
 
@@ -428,6 +439,11 @@ where
         let retention = self.batch_record.bundle_retention(block.number);
         self.executor.state.merge_transitions(retention);
 
+        // save the execution trace
+        if let Some(trace) = self.executor.state.take_execution_trace() {
+            self.batch_record.save_execution_trace(trace);
+        }
+
         // store receipts in the set
         self.batch_record.save_receipts(receipts)?;
 
@@ -446,6 +462,7 @@ where
 
         ExecutionOutcome::new(
             self.executor.state.take_bundle(),
+            self.batch_record.take_execution_traces(),
             self.batch_record.take_receipts(),
             self.batch_record.first_block().unwrap_or_default(),
             self.batch_record.take_requests(),

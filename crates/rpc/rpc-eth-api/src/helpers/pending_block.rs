@@ -366,6 +366,7 @@ pub trait LoadPendingBlock {
 
         let execution_outcome = ExecutionOutcome::new(
             db.take_bundle(),
+            db.take_execution_trace().map_or_else(Vec::new, |trace| vec![trace]),
             vec![receipts].into(),
             block_number,
             Vec::new(),

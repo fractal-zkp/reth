@@ -554,6 +554,7 @@ mod tests {
                 vec![vec![(Address::new([2; 20]), None, vec![])]],
                 vec![],
             ),
+            Default::default(),
             vec![vec![]].into(),
             1,
             vec![],
@@ -570,6 +571,7 @@ mod tests {
                 vec![vec![(Address::new([3; 20]), None, vec![])]],
                 vec![],
             ),
+            Default::default(),
             vec![vec![]].into(),
             2,
             vec![],
@@ -687,6 +689,7 @@ mod tests {
         // vector, and first_block set to 10
         let execution_outcome = ExecutionOutcome {
             bundle: Default::default(),
+            traces: Default::default(),
             receipts,
             requests: vec![],
             first_block: 10,
@@ -706,6 +709,7 @@ mod tests {
         // Create an ExecutionOutcome object with a single receipt vector containing receipt1
         let execution_outcome1 = ExecutionOutcome {
             bundle: Default::default(),
+            traces: Default::default(),
             receipts: Receipts { receipt_vec: vec![vec![Some(receipt1)]] },
             requests: vec![],
             first_block: 10,

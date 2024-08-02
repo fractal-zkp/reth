@@ -100,6 +100,7 @@ fn get_executed_block(block_number: BlockNumber, receipts: Receipts) -> Executed
         Arc::new(sealed_with_senders.senders),
         Arc::new(ExecutionOutcome::new(
             BundleState::default(),
+            Default::default(),
             receipts,
             block_number,
             vec![Requests::default()],

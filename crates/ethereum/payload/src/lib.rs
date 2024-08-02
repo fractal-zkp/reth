@@ -470,6 +470,7 @@ where
 
     let execution_outcome = ExecutionOutcome::new(
         db.take_bundle(),
+        db.take_execution_trace().map_or_else(Vec::new, |trace| vec![trace]),
         vec![receipts].into(),
         block_number,
         vec![requests.clone().unwrap_or_default()],

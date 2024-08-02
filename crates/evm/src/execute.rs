@@ -3,7 +3,7 @@
 use reth_execution_types::ExecutionOutcome;
 use reth_primitives::{BlockNumber, BlockWithSenders, Receipt, Request, U256};
 use reth_prune_types::PruneModes;
-use revm::db::BundleState;
+use revm::db::{BundleState, ExecutionTrace};
 use revm_primitives::db::Database;
 use std::fmt::Display;
 
@@ -105,6 +105,8 @@ pub trait BatchExecutor<DB> {
 pub struct BlockExecutionOutput<T> {
     /// The changed state of the block after execution.
     pub state: BundleState,
+    /// Optional execution trace of the block.
+    pub trace: Option<ExecutionTrace>,
     /// All the receipts of the transactions in the block.
     pub receipts: Vec<T>,
     /// All the EIP-7685 requests of the transactions in the block.

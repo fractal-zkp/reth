@@ -5,7 +5,7 @@ use core::time::Duration;
 use reth_execution_errors::BlockExecutionError;
 use reth_primitives::{Receipt, Receipts, Request, Requests};
 use reth_prune_types::{PruneMode, PruneModes, PruneSegmentError, MINIMUM_PRUNING_DISTANCE};
-use revm::db::states::bundle_state::BundleRetention;
+use revm::db::{states::bundle_state::BundleRetention, ExecutionTrace};
 use std::collections::HashSet;
 use tracing::debug;
 
@@ -20,6 +20,8 @@ use alloc::vec::Vec;
 pub struct BlockBatchRecord {
     /// Pruning configuration.
     prune_modes: PruneModes,
+    /// The collection of ExecutionTraces.
+    traces: Vec<ExecutionTrace>,
     /// The collection of receipts.
     /// Outer vector stores receipts for each block sequentially.
     /// The inner vector stores receipts ordered by transaction number.
@@ -177,6 +179,16 @@ impl BlockBatchRecord {
     /// Save EIP-7685 requests to the executor.
     pub fn save_requests(&mut self, requests: Vec<Request>) {
         self.requests.push(requests.into());
+    }
+
+    /// Save the execution trace.
+    pub fn save_execution_trace(&mut self, trace: ExecutionTrace) {
+        self.traces.push(trace);
+    }
+
+    /// Returns all recorded execution traces.
+    pub fn take_execution_traces(&mut self) -> Vec<ExecutionTrace> {
+        core::mem::take(&mut self.traces)
     }
 }
 

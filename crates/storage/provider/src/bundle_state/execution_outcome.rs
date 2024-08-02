@@ -251,9 +251,15 @@ mod tests {
 
         state.merge_transitions(BundleRetention::Reverts);
 
-        ExecutionOutcome::new(state.take_bundle(), Receipts::default(), 1, Vec::new())
-            .write_to_storage(&provider, None, OriginalValuesKnown::Yes)
-            .expect("Could not write bundle state to DB");
+        ExecutionOutcome::new(
+            state.take_bundle(),
+            state.take_execution_trace().map_or_else(Vec::new, |x| vec![x]),
+            Receipts::default(),
+            1,
+            Vec::new(),
+        )
+        .write_to_storage(&provider, None, OriginalValuesKnown::Yes)
+        .expect("Could not write bundle state to DB");
 
         // Check plain storage state
         let mut storage_cursor = provider
@@ -349,9 +355,15 @@ mod tests {
         )]));
 
         state.merge_transitions(BundleRetention::Reverts);
-        ExecutionOutcome::new(state.take_bundle(), Receipts::default(), 2, Vec::new())
-            .write_to_storage(&provider, None, OriginalValuesKnown::Yes)
-            .expect("Could not write bundle state to DB");
+        ExecutionOutcome::new(
+            state.take_bundle(),
+            state.take_execution_trace().map_or_else(Vec::new, |x| vec![x]),
+            Receipts::default(),
+            2,
+            Vec::new(),
+        )
+        .write_to_storage(&provider, None, OriginalValuesKnown::Yes)
+        .expect("Could not write bundle state to DB");
 
         assert_eq!(
             storage_cursor.seek_exact(address_a).unwrap(),
@@ -413,9 +425,15 @@ mod tests {
             },
         )]));
         init_state.merge_transitions(BundleRetention::Reverts);
-        ExecutionOutcome::new(init_state.take_bundle(), Receipts::default(), 0, Vec::new())
-            .write_to_storage(&provider, None, OriginalValuesKnown::Yes)
-            .expect("Could not write init bundle state to DB");
+        ExecutionOutcome::new(
+            init_state.take_bundle(),
+            init_state.take_execution_trace().map_or_else(Vec::new, |x| vec![x]),
+            Receipts::default(),
+            0,
+            Vec::new(),
+        )
+        .write_to_storage(&provider, None, OriginalValuesKnown::Yes)
+        .expect("Could not write init bundle state to DB");
 
         let mut state = State::builder().with_bundle_update().build();
         state.insert_account_with_storage(
@@ -559,9 +577,15 @@ mod tests {
 
         let bundle = state.take_bundle();
 
-        ExecutionOutcome::new(bundle, Receipts::default(), 1, Vec::new())
-            .write_to_storage(&provider, None, OriginalValuesKnown::Yes)
-            .expect("Could not write bundle state to DB");
+        ExecutionOutcome::new(
+            bundle,
+            state.take_execution_trace().map_or_else(Vec::new, |x| vec![x]),
+            Receipts::default(),
+            1,
+            Vec::new(),
+        )
+        .write_to_storage(&provider, None, OriginalValuesKnown::Yes)
+        .expect("Could not write bundle state to DB");
 
         let mut storage_changeset_cursor = provider
             .tx_ref()
@@ -722,9 +746,15 @@ mod tests {
             },
         )]));
         init_state.merge_transitions(BundleRetention::Reverts);
-        ExecutionOutcome::new(init_state.take_bundle(), Receipts::default(), 0, Vec::new())
-            .write_to_storage(&provider, None, OriginalValuesKnown::Yes)
-            .expect("Could not write init bundle state to DB");
+        ExecutionOutcome::new(
+            init_state.take_bundle(),
+            init_state.take_execution_trace().map_or_else(Vec::new, |x| vec![x]),
+            Receipts::default(),
+            0,
+            Vec::new(),
+        )
+        .write_to_storage(&provider, None, OriginalValuesKnown::Yes)
+        .expect("Could not write init bundle state to DB");
 
         let mut state = State::builder().with_bundle_update().build();
         state.insert_account_with_storage(
@@ -767,9 +797,15 @@ mod tests {
 
         // Commit block #1 changes to the database.
         state.merge_transitions(BundleRetention::Reverts);
-        ExecutionOutcome::new(state.take_bundle(), Receipts::default(), 1, Vec::new())
-            .write_to_storage(&provider, None, OriginalValuesKnown::Yes)
-            .expect("Could not write bundle state to DB");
+        ExecutionOutcome::new(
+            state.take_bundle(),
+            state.take_execution_trace().map_or_else(Vec::new, |x| vec![x]),
+            Receipts::default(),
+            1,
+            Vec::new(),
+        )
+        .write_to_storage(&provider, None, OriginalValuesKnown::Yes)
+        .expect("Could not write bundle state to DB");
 
         let mut storage_changeset_cursor = provider
             .tx_ref()
@@ -799,6 +835,7 @@ mod tests {
     fn revert_to_indices() {
         let base = ExecutionOutcome {
             bundle: BundleState::default(),
+            traces: Default::default(),
             receipts: vec![vec![Some(Receipt::default()); 2]; 7].into(),
             first_block: 10,
             requests: Vec::new(),
@@ -865,6 +902,7 @@ mod tests {
             assert_eq!(
                 ExecutionOutcome::new(
                     state.bundle_state.clone(),
+                    state.execution_trace.clone().map_or_else(Vec::new, |x| vec![x]),
                     Receipts::default(),
                     0,
                     Vec::new()
@@ -1016,6 +1054,7 @@ mod tests {
 
         let mut test = ExecutionOutcome {
             bundle: present_state,
+            traces: Default::default(),
             receipts: vec![vec![Some(Receipt::default()); 2]; 1].into(),
             first_block: 2,
             requests: Vec::new(),
