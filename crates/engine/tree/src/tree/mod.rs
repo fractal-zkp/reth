@@ -680,6 +680,7 @@ where
             senders: Arc::new(block.senders),
             execution_output: Arc::new(ExecutionOutcome::new(
                 output.state,
+                output.trace.map_or_else(Vec::new, |t| vec![t]),
                 Receipts::from(output.receipts),
                 block_number,
                 vec![Requests::from(output.requests)],

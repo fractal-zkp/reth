@@ -360,6 +360,7 @@ where
 
         Ok(BlockExecutionOutput {
             state: self.state.take_bundle(),
+            trace: self.state.take_execution_trace(),
             receipts,
             requests: vec![],
             gas_used,
@@ -427,6 +428,7 @@ where
 
         ExecutionOutcome::new(
             self.executor.state.take_bundle(),
+            self.batch_record.take_execution_traces(),
             self.batch_record.take_receipts(),
             self.batch_record.first_block().unwrap_or_default(),
             self.batch_record.take_requests(),

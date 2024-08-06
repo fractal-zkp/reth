@@ -142,8 +142,13 @@ where
         // We're reusing receipt writing code internal to
         // `ExecutionOutcome::write_to_storage`, so we just use a default empty
         // `BundleState`.
-        let execution_outcome =
-            ExecutionOutcome::new(Default::default(), receipts, first_block, Default::default());
+        let execution_outcome = ExecutionOutcome::new(
+            Default::default(),
+            Default::default(),
+            receipts,
+            first_block,
+            Default::default(),
+        );
 
         let static_file_producer =
             static_file_provider.get_writer(first_block, StaticFileSegment::Receipts)?;

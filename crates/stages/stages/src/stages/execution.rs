@@ -4,7 +4,7 @@ use reth_config::config::ExecutionConfig;
 use reth_db::{static_file::HeaderMask, tables};
 use reth_db_api::{cursor::DbCursorRO, database::Database, transaction::DbTx};
 use reth_evm::execute::{BatchExecutor, BlockExecutorProvider};
-use reth_execution_types::{Chain, ExecutionOutcome};
+use reth_execution_types::Chain;
 use reth_exex::{ExExManagerHandle, ExExNotification};
 use reth_primitives::{BlockNumber, Header, StaticFileSegment};
 use reth_primitives_traits::format_gas_throughput;
@@ -323,8 +323,7 @@ where
 
         // prepare execution output for writing
         let time = Instant::now();
-        let ExecutionOutcome { bundle, receipts, requests, first_block } = executor.finalize();
-        let state = ExecutionOutcome::new(bundle, receipts, first_block, requests);
+        let state = executor.finalize();
         let write_preparation_duration = time.elapsed();
 
         // log the gas per second for the range we just executed

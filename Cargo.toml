@@ -539,3 +539,8 @@ serial_test = "3"
 similar-asserts = "1.5.0"
 test-fuzz = "5"
 iai-callgrind = "0.11"
+
+[patch.crates-io]
+revm = { git = "https://github.com/fractal-zkp/revm.git", branch = "zeth" }
+revm-primitives = { git = "https://github.com/fractal-zkp/revm.git", branch = "zeth" }
+revm-inspectors = { git = "https://github.com/fractal-zkp/revm-inspectors.git", branch = "zeth" }

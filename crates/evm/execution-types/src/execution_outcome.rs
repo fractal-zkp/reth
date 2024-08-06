@@ -4,7 +4,7 @@ use reth_primitives::{
 };
 use reth_trie::HashedPostState;
 use revm::{
-    db::{states::BundleState, BundleAccount},
+    db::{states::BundleState, BundleAccount, ExecutionTrace},
     primitives::AccountInfo,
 };
 use std::collections::HashMap;
@@ -18,6 +18,8 @@ use std::collections::HashMap;
 pub struct ExecutionOutcome {
     /// Bundle state with reverts.
     pub bundle: BundleState,
+    /// Execution traces
+    pub traces: Vec<ExecutionTrace>,
     /// The collection of receipts.
     /// Outer vector stores receipts for each block sequentially.
     /// The inner vector stores receipts ordered by transaction number.
@@ -52,11 +54,12 @@ impl ExecutionOutcome {
     /// bundle state, receipts, first block number, and EIP-7685 requests.
     pub const fn new(
         bundle: BundleState,
+        traces: Vec<ExecutionTrace>,
         receipts: Receipts,
         first_block: BlockNumber,
         requests: Vec<Requests>,
     ) -> Self {
-        Self { bundle, receipts, first_block, requests }
+        Self { bundle, traces, receipts, first_block, requests }
     }
 
     /// Creates a new `ExecutionOutcome` from initialization parameters.
@@ -67,6 +70,7 @@ impl ExecutionOutcome {
         state_init: BundleStateInit,
         revert_init: RevertsInit,
         contracts_init: Vec<(B256, Bytecode)>,
+        traces: Vec<ExecutionTrace>,
         receipts: Receipts,
         first_block: BlockNumber,
         requests: Vec<Requests>,
@@ -98,7 +102,7 @@ impl ExecutionOutcome {
             contracts_init.into_iter().map(|(code_hash, bytecode)| (code_hash, bytecode.0)),
         );
 
-        Self { bundle, receipts, first_block, requests }
+        Self { bundle, traces, receipts, first_block, requests }
     }
 
     /// Return revm bundle state.
@@ -388,6 +392,7 @@ mod tests {
         // first_block
         let exec_res = ExecutionOutcome {
             bundle: bundle.clone(),
+            traces: Default::default(),
             receipts: receipts.clone(),
             requests: requests.clone(),
             first_block,
@@ -395,7 +400,13 @@ mod tests {
 
         // Assert that creating a new ExecutionOutcome using the constructor matches exec_res
         assert_eq!(
-            ExecutionOutcome::new(bundle, receipts.clone(), first_block, requests.clone()),
+            ExecutionOutcome::new(
+                bundle,
+                Default::default(),
+                receipts.clone(),
+                first_block,
+                requests.clone()
+            ),
             exec_res
         );
 
@@ -419,6 +430,7 @@ mod tests {
                 state_init,
                 revert_init,
                 vec![],
+                Default::default(),
                 receipts,
                 first_block,
                 requests,
@@ -450,6 +462,7 @@ mod tests {
         // first_block
         let exec_res = ExecutionOutcome {
             bundle: Default::default(),
+            traces: Default::default(),
             receipts,
             requests: vec![],
             first_block,
@@ -488,6 +501,7 @@ mod tests {
         // first_block
         let exec_res = ExecutionOutcome {
             bundle: Default::default(),
+            traces: Default::default(),
             receipts,
             requests: vec![],
             first_block,
@@ -523,9 +537,10 @@ mod tests {
         // first_block
         let exec_res = ExecutionOutcome {
             bundle: Default::default(), // Default value for bundle
-            receipts,                   // Include the created receipts
-            requests: vec![],           // Empty vector for requests
-            first_block,                // Set the first block number
+            traces: Default::default(),
+            receipts,         // Include the created receipts
+            requests: vec![], // Empty vector for requests
+            first_block,      // Set the first block number
         };
 
         // Get receipts for block number 123 and convert the result into a vector
@@ -573,9 +588,10 @@ mod tests {
         // first_block
         let exec_res = ExecutionOutcome {
             bundle: Default::default(), // Default value for bundle
-            receipts,                   // Include the created receipts
-            requests: vec![],           // Empty vector for requests
-            first_block,                // Set the first block number
+            traces: Default::default(),
+            receipts,         // Include the created receipts
+            requests: vec![], // Empty vector for requests
+            first_block,      // Set the first block number
         };
 
         // Assert that the length of receipts in exec_res is 1
@@ -587,9 +603,10 @@ mod tests {
         // Create a ExecutionOutcome object with an empty Receipts object
         let exec_res_empty_receipts = ExecutionOutcome {
             bundle: Default::default(), // Default value for bundle
-            receipts: receipts_empty,   // Include the empty receipts
-            requests: vec![],           // Empty vector for requests
-            first_block,                // Set the first block number
+            traces: Default::default(),
+            receipts: receipts_empty, // Include the empty receipts
+            requests: vec![],         // Empty vector for requests
+            first_block,              // Set the first block number
         };
 
         // Assert that the length of receipts in exec_res_empty_receipts is 0
@@ -635,8 +652,13 @@ mod tests {
 
         // Create a ExecutionOutcome object with the created bundle, receipts, requests, and
         // first_block
-        let mut exec_res =
-            ExecutionOutcome { bundle: Default::default(), receipts, requests, first_block };
+        let mut exec_res = ExecutionOutcome {
+            bundle: Default::default(),
+            traces: Default::default(),
+            receipts,
+            requests,
+            first_block,
+        };
 
         // Assert that the revert_to method returns true when reverting to the initial block number.
         assert!(exec_res.revert_to(123));
@@ -689,8 +711,13 @@ mod tests {
         let first_block = 123;
 
         // Create an ExecutionOutcome object.
-        let mut exec_res =
-            ExecutionOutcome { bundle: Default::default(), receipts, requests, first_block };
+        let mut exec_res = ExecutionOutcome {
+            bundle: Default::default(),
+            traces: Default::default(),
+            receipts,
+            requests,
+            first_block,
+        };
 
         // Extend the ExecutionOutcome object by itself.
         exec_res.extend(exec_res.clone());
@@ -700,6 +727,7 @@ mod tests {
             exec_res,
             ExecutionOutcome {
                 bundle: Default::default(),
+                traces: Default::default(),
                 receipts: Receipts {
                     receipt_vec: vec![vec![Some(receipt.clone())], vec![Some(receipt)]]
                 },
@@ -750,8 +778,13 @@ mod tests {
 
         // Create a ExecutionOutcome object with the created bundle, receipts, requests, and
         // first_block
-        let exec_res =
-            ExecutionOutcome { bundle: Default::default(), receipts, requests, first_block };
+        let exec_res = ExecutionOutcome {
+            bundle: Default::default(),
+            traces: Default::default(),
+            receipts,
+            requests,
+            first_block,
+        };
 
         // Split the ExecutionOutcome at block number 124
         let result = exec_res.clone().split_at(124);
@@ -759,6 +792,7 @@ mod tests {
         // Define the expected lower ExecutionOutcome after splitting
         let lower_execution_outcome = ExecutionOutcome {
             bundle: Default::default(),
+            traces: Default::default(),
             receipts: Receipts { receipt_vec: vec![vec![Some(receipt.clone())]] },
             requests: vec![Requests(vec![request])],
             first_block,
@@ -767,6 +801,7 @@ mod tests {
         // Define the expected higher ExecutionOutcome after splitting
         let higher_execution_outcome = ExecutionOutcome {
             bundle: Default::default(),
+            traces: Default::default(),
             receipts: Receipts {
                 receipt_vec: vec![vec![Some(receipt.clone())], vec![Some(receipt)]],
             },

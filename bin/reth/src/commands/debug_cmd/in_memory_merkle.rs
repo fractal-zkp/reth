@@ -133,7 +133,7 @@ impl Command {
 
         let merkle_block_td =
             provider.header_td_by_number(merkle_block_number)?.unwrap_or_default();
-        let BlockExecutionOutput { state, receipts, requests, .. } = executor.execute(
+        let BlockExecutionOutput { state, receipts, requests, trace, .. } = executor.execute(
             (
                 &block
                     .clone()
@@ -144,8 +144,13 @@ impl Command {
             )
                 .into(),
         )?;
-        let execution_outcome =
-            ExecutionOutcome::new(state, receipts.into(), block.number, vec![requests.into()]);
+        let execution_outcome = ExecutionOutcome::new(
+            state,
+            trace.map_or_else(Vec::new, |t| vec![t]),
+            receipts.into(),
+            block.number,
+            vec![requests.into()],
+        );
 
         // Unpacked `BundleState::state_root_slow` function
         let (in_memory_state_root, in_memory_updates) =

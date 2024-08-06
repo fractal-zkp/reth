@@ -244,6 +244,7 @@ mod tests {
     ) -> ExecutionOutcome {
         ExecutionOutcome {
             bundle: block_execution_output.state.clone(),
+            traces: block_execution_output.trace.clone().map_or_else(Vec::new, |t| vec![t]),
             receipts: block_execution_output.receipts.clone().into(),
             first_block: block_number,
             requests: vec![Requests(block_execution_output.requests.clone())],
