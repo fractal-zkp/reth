@@ -20,7 +20,7 @@ use alloc::vec::Vec;
 pub struct BlockBatchRecord {
     /// Pruning configuration.
     prune_modes: PruneModes,
-    /// The collection of ExecutionTraces.
+    /// The collection of `ExecutionTraces`.
     traces: Vec<ExecutionTrace>,
     /// The collection of receipts.
     /// Outer vector stores receipts for each block sequentially.
