@@ -10,6 +10,7 @@ use reth_primitives::{BlockNumber, Header, StaticFileSegment};
 use reth_primitives_traits::format_gas_throughput;
 use reth_provider::{
     providers::{StaticFileProvider, StaticFileProviderRWRefMut, StaticFileWriter},
+    writer::UnifiedStorageWriter,
     BlockReader, DatabaseProviderRW, HeaderProvider, LatestStateProviderRef, OriginalValuesKnown,
     ProviderError, StateWriter, StatsReader, TransactionVariant,
 };
@@ -357,8 +358,11 @@ where
         }
 
         let time = Instant::now();
+
         // write output
-        state.write_to_storage(provider, static_file_producer, OriginalValuesKnown::Yes)?;
+        let mut writer = UnifiedStorageWriter::new(provider, static_file_producer);
+        writer.write_to_storage(state, OriginalValuesKnown::Yes)?;
+
         let db_write_duration = time.elapsed();
         debug!(
             target: "sync::stages::execution",
@@ -831,8 +835,6 @@ mod tests {
 
     #[tokio::test]
     async fn sanity_execution_of_block() {
-        // TODO cleanup the setup after https://github.com/paradigmxyz/reth/issues/332
-        // is merged as it has similar framework
         let factory = create_test_provider_factory();
         let provider = factory.provider_rw().unwrap();
         let input = ExecInput { target: Some(1), checkpoint: None };
@@ -851,7 +853,7 @@ mod tests {
         {
             let mut receipts_writer =
                 provider.static_file_provider().latest_writer(StaticFileSegment::Receipts).unwrap();
-            receipts_writer.increment_block(StaticFileSegment::Receipts, 0).unwrap();
+            receipts_writer.increment_block(0).unwrap();
             receipts_writer.commit().unwrap();
         }
         provider.commit().unwrap();
@@ -979,9 +981,6 @@ mod tests {
 
     #[tokio::test]
     async fn sanity_execute_unwind() {
-        // TODO cleanup the setup after https://github.com/paradigmxyz/reth/issues/332
-        // is merged as it has similar framework
-
         let factory = create_test_provider_factory();
         let provider = factory.provider_rw().unwrap();
         let input = ExecInput { target: Some(1), checkpoint: None };
@@ -1000,7 +999,7 @@ mod tests {
         {
             let mut receipts_writer =
                 provider.static_file_provider().latest_writer(StaticFileSegment::Receipts).unwrap();
-            receipts_writer.increment_block(StaticFileSegment::Receipts, 0).unwrap();
+            receipts_writer.increment_block(0).unwrap();
             receipts_writer.commit().unwrap();
         }
         provider.commit().unwrap();
@@ -1117,7 +1116,7 @@ mod tests {
         {
             let mut receipts_writer =
                 provider.static_file_provider().latest_writer(StaticFileSegment::Receipts).unwrap();
-            receipts_writer.increment_block(StaticFileSegment::Receipts, 0).unwrap();
+            receipts_writer.increment_block(0).unwrap();
             receipts_writer.commit().unwrap();
         }
         provider.commit().unwrap();

@@ -1,7 +1,8 @@
-use reth_primitives::{Address, B256};
+use reth_primitives::{Address, Bytes, B256};
 use reth_storage_errors::provider::ProviderResult;
-use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState, StateWitness};
+use reth_trie::{updates::TrieUpdates, AccountProof, HashedPostState, HashedStorage, MultiProof};
 use revm::db::BundleState;
+use std::collections::HashMap;
 
 /// A type that can compute the state root of a given post state.
 #[auto_impl::auto_impl(&, Box, Arc)]
@@ -14,12 +15,11 @@ pub trait StateRootProvider: Send + Sync {
     /// `state_root_with_updates` since it affects the memory usage during state root
     /// computation.
     fn state_root(&self, bundle_state: &BundleState) -> ProviderResult<B256> {
-        let hashed_state = HashedPostState::from_bundle_state(&bundle_state.state);
-        self.hashed_state_root(&hashed_state)
+        self.hashed_state_root(HashedPostState::from_bundle_state(&bundle_state.state))
     }
 
     /// Returns the state root of the `HashedPostState` on top of the current state.
-    fn hashed_state_root(&self, hashed_state: &HashedPostState) -> ProviderResult<B256>;
+    fn hashed_state_root(&self, hashed_state: HashedPostState) -> ProviderResult<B256>;
 
     /// Returns the state root of the BundleState on top of the current state with trie
     /// updates to be committed to the database.
@@ -27,16 +27,23 @@ pub trait StateRootProvider: Send + Sync {
         &self,
         bundle_state: &BundleState,
     ) -> ProviderResult<(B256, TrieUpdates)> {
-        let hashed_state = HashedPostState::from_bundle_state(&bundle_state.state);
-        self.hashed_state_root_with_updates(&hashed_state)
+        self.hashed_state_root_with_updates(HashedPostState::from_bundle_state(&bundle_state.state))
     }
 
     /// Returns the state root of the `HashedPostState` on top of the current state with trie
     /// updates to be committed to the database.
     fn hashed_state_root_with_updates(
         &self,
-        hashed_state: &HashedPostState,
+        hashed_state: HashedPostState,
     ) -> ProviderResult<(B256, TrieUpdates)>;
+
+    /// Returns the storage root of the `HashedStorage` for target address on top of the current
+    /// state.
+    fn hashed_storage_root(
+        &self,
+        address: Address,
+        hashed_storage: HashedStorage,
+    ) -> ProviderResult<B256>;
 }
 
 /// A type that can generate state proof on top of a given post state.
@@ -51,36 +58,30 @@ pub trait StateProofProvider: Send + Sync {
         slots: &[B256],
     ) -> ProviderResult<AccountProof> {
         let hashed_state = HashedPostState::from_bundle_state(&state.state);
-        self.hashed_proof(&hashed_state, address, slots)
+        self.hashed_proof(hashed_state, address, slots)
     }
 
     /// Get account and storage proofs of target keys in the `HashedPostState`
     /// on top of the current state.
     fn hashed_proof(
         &self,
-        hashed_state: &HashedPostState,
+        hashed_state: HashedPostState,
         address: Address,
         slots: &[B256],
     ) -> ProviderResult<AccountProof>;
-}
 
-/// A type that can generate state witnesses on top of a given post state.
-#[auto_impl::auto_impl(&, Box, Arc)]
-pub trait StateWitnessProvider: Send + Sync {
-    /// Get state witness of target keys in the `BundleState` on top of the current state.
+    /// Get multiproof of target accounts and associated storage keys in the
+    /// `BundleState` on top of the current state.
+    fn multiproof(
+        &self,
+        overlay: HashedPostState,
+        targets: HashMap<Address, Vec<B256>>,
+    ) -> ProviderResult<MultiProof>;
+
+    /// Get trie witness for provided state.
     fn witness(
         &self,
-        state: &BundleState,
-        targets: Vec<(Address, Vec<B256>)>,
-    ) -> ProviderResult<StateWitness> {
-        let hashed_state = HashedPostState::from_bundle_state(&state.state);
-        self.hashed_witness(&hashed_state, targets)
-    }
-
-    /// Get state witness of target keys in the `HashedPostState` on top of the current state.
-    fn hashed_witness(
-        &self,
-        hashed_state: &HashedPostState,
-        targets: Vec<(Address, Vec<B256>)>,
-    ) -> ProviderResult<StateWitness>;
+        overlay: HashedPostState,
+        target: HashedPostState,
+    ) -> ProviderResult<HashMap<B256, Bytes>>;
 }
