@@ -1,5 +1,8 @@
 use reth_primitives::{Request, U256};
-use revm::db::{BundleState, ExecutionTrace};
+use revm::{
+    db::{BundleState, ExecutionTrace},
+    primitives::{Account, Address, HashMap},
+};
 
 /// A helper type for ethereum block inputs that consists of a block and the total difficulty.
 #[derive(Debug)]
@@ -32,8 +35,10 @@ impl<'a, Block> From<(&'a Block, U256)> for BlockExecutionInput<'a, Block> {
 pub struct BlockExecutionOutput<T> {
     /// The changed state of the block after execution.
     pub state: BundleState,
-    /// Optional ExecutionTrace of the executed block
+    /// Optional `ExecutionTrace` of the executed block.
     pub trace: Option<ExecutionTrace>,
+    /// Optional `TransactionTraces` of the executed block.
+    pub tx_traces: Vec<HashMap<Address, Account>>,
     /// All the receipts of the transactions in the block.
     pub receipts: Vec<T>,
     /// All the EIP-7685 requests of the transactions in the block.

@@ -326,6 +326,7 @@ where
     .map_err(|err| PayloadBuilderError::Internal(err.into()))?;
 
     let mut receipts = Vec::new();
+    let mut tx_traces = Vec::new();
     while let Some(pool_tx) = best_txs.next() {
         // ensure we still have capacity for this transaction
         if cumulative_gas_used + pool_tx.gas_limit() > block_gas_limit {
@@ -395,6 +396,7 @@ where
         // drop evm so db is released.
         drop(evm);
         // commit changes
+        tx_traces.push(state.clone());
         db.commit(state);
 
         // add to the total blob gas used if the transaction successfully executed
@@ -470,6 +472,7 @@ where
     let execution_outcome = ExecutionOutcome::new(
         db.take_bundle(),
         db.take_execution_trace().map_or_else(Vec::new, |trace| vec![trace]),
+        vec![tx_traces],
         vec![receipts].into(),
         block_number,
         vec![requests.clone().unwrap_or_default()],

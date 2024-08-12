@@ -1742,6 +1742,7 @@ where
             execution_output: Arc::new(ExecutionOutcome::new(
                 output.state,
                 output.trace.map_or_else(Vec::new, |t| vec![t]),
+                vec![output.tx_traces],
                 Receipts::from(output.receipts),
                 block_number,
                 vec![Requests::from(output.requests)],

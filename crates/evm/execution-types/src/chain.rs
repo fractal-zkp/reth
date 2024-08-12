@@ -561,6 +561,7 @@ mod tests {
                 vec![],
             ),
             Default::default(),
+            Default::default(),
             vec![vec![]].into(),
             1,
             vec![],
@@ -577,6 +578,7 @@ mod tests {
                 vec![vec![(Address::new([3; 20]), None, vec![])]],
                 vec![],
             ),
+            Default::default(),
             Default::default(),
             vec![vec![]].into(),
             2,
@@ -696,6 +698,7 @@ mod tests {
         let execution_outcome = ExecutionOutcome {
             bundle: Default::default(),
             traces: Default::default(),
+            tx_traces: Default::default(),
             receipts,
             requests: vec![],
             first_block: 10,
@@ -716,6 +719,7 @@ mod tests {
         let execution_outcome1 = ExecutionOutcome {
             bundle: Default::default(),
             traces: Default::default(),
+            tx_traces: Default::default(),
             receipts: Receipts { receipt_vec: vec![vec![Some(receipt1)]] },
             requests: vec![],
             first_block: 10,

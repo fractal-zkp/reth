@@ -273,11 +273,12 @@ impl Command {
                 let db = StateProviderDatabase::new(blockchain_db.latest()?);
                 let executor = block_executor!(provider_factory.chain_spec()).executor(db);
 
-                let BlockExecutionOutput { state, receipts, requests, trace, .. } =
+                let BlockExecutionOutput { state, receipts, requests, trace, tx_traces, .. } =
                     executor.execute((&block_with_senders.clone().unseal(), U256::MAX).into())?;
                 let execution_outcome = ExecutionOutcome::new(
                     state,
                     trace.map_or_else(Vec::new, |t| vec![t]),
+                    vec![tx_traces],
                     receipts.into(),
                     block.number,
                     vec![requests.into()],

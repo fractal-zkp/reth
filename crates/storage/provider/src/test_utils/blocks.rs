@@ -151,6 +151,7 @@ fn block1(number: BlockNumber) -> (SealedBlockWithSenders, ExecutionOutcome) {
             .state_storage(account1, HashMap::from([(slot, (U256::ZERO, U256::from(10)))]))
             .build(),
         Default::default(),
+        Default::default(),
         vec![vec![Some(Receipt {
             tx_type: TxType::Eip2930,
             success: true,
@@ -211,6 +212,7 @@ fn block2(
             )
             .revert_storage(number, account, Vec::from([(slot, U256::from(10))]))
             .build(),
+        Default::default(),
         Default::default(),
         vec![vec![Some(Receipt {
             tx_type: TxType::Eip1559,
@@ -282,6 +284,7 @@ fn block3(
     }
     let execution_outcome = ExecutionOutcome::new(
         bundle_state_builder.build(),
+        Default::default(),
         Default::default(),
         vec![vec![Some(Receipt {
             tx_type: TxType::Eip1559,
@@ -375,6 +378,7 @@ fn block4(
     let execution_outcome = ExecutionOutcome::new(
         bundle_state_builder.build(),
         Default::default(),
+        Default::default(),
         vec![vec![Some(Receipt {
             tx_type: TxType::Eip1559,
             success: true,
@@ -461,6 +465,7 @@ fn block5(
     }
     let execution_outcome = ExecutionOutcome::new(
         bundle_state_builder.build(),
+        Default::default(),
         Default::default(),
         vec![vec![Some(Receipt {
             tx_type: TxType::Eip1559,

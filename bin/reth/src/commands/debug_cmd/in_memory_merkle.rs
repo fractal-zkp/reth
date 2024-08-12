@@ -136,20 +136,22 @@ impl Command {
 
         let merkle_block_td =
             provider.header_td_by_number(merkle_block_number)?.unwrap_or_default();
-        let BlockExecutionOutput { state, receipts, requests, trace, .. } = executor.execute(
-            (
-                &block
-                    .clone()
-                    .unseal()
-                    .with_recovered_senders()
-                    .ok_or(BlockValidationError::SenderRecoveryError)?,
-                merkle_block_td + block.difficulty,
-            )
-                .into(),
-        )?;
+        let BlockExecutionOutput { state, receipts, requests, trace, tx_traces, .. } = executor
+            .execute(
+                (
+                    &block
+                        .clone()
+                        .unseal()
+                        .with_recovered_senders()
+                        .ok_or(BlockValidationError::SenderRecoveryError)?,
+                    merkle_block_td + block.difficulty,
+                )
+                    .into(),
+            )?;
         let execution_outcome = ExecutionOutcome::new(
             state,
             trace.map_or_else(Vec::new, |t| vec![t]),
+            vec![tx_traces],
             receipts.into(),
             block.number,
             vec![requests.into()],
