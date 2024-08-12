@@ -285,6 +285,7 @@ where
     let mut sum_blob_gas_used = 0;
     let mut transactions = Vec::new();
     let mut receipts = Vec::new();
+    let mut tx_traces = Vec::new();
     let mut versioned_hashes = Vec::new();
     for tx in next_block.body {
         // ensure we still have capacity for this transaction
@@ -310,6 +311,7 @@ where
                 )))
             }
         };
+        tx_traces.push(exec_result.state.clone());
         evm.db_mut().commit(exec_result.state);
 
         if let Some(blob_tx) = tx.transaction.as_eip4844() {
@@ -347,6 +349,7 @@ where
     let outcome = ExecutionOutcome::new(
         state.take_bundle(),
         state.take_execution_trace().map_or(vec![], |trace| vec![trace]),
+        vec![tx_traces],
         Receipts::from(vec![receipts]),
         reorg_target.number,
         Default::default(),

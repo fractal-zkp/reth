@@ -51,11 +51,18 @@ impl<DB> Executor<DB> for MockExecutorProvider {
     type Error = BlockExecutionError;
 
     fn execute(self, _: Self::Input<'_>) -> Result<Self::Output, Self::Error> {
-        let ExecutionOutcome { bundle, mut traces, receipts, requests, first_block: _ } =
-            self.exec_results.lock().pop().unwrap();
+        let ExecutionOutcome {
+            bundle,
+            mut traces,
+            mut tx_traces,
+            receipts,
+            requests,
+            first_block: _,
+        } = self.exec_results.lock().pop().unwrap();
         Ok(BlockExecutionOutput {
             state: bundle,
             trace: traces.pop(),
+            tx_traces: tx_traces.pop().unwrap(),
             receipts: receipts.into_iter().flatten().flatten().collect(),
             requests: requests.into_iter().flatten().collect(),
             gas_used: 0,

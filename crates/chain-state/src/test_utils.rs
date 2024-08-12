@@ -187,6 +187,7 @@ impl TestBlockBuilder {
             Arc::new(ExecutionOutcome::new(
                 BundleState::default(),
                 Default::default(),
+                Default::default(),
                 receipts,
                 block_number,
                 vec![Requests::default()],
@@ -261,6 +262,7 @@ impl TestBlockBuilder {
 
         let execution_outcome = ExecutionOutcome::new(
             bundle_state_builder.build(),
+            Default::default(),
             Default::default(),
             vec![vec![None]].into(),
             block.number,

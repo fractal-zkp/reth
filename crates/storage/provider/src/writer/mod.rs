@@ -779,6 +779,7 @@ mod tests {
         let outcome = ExecutionOutcome::new(
             state.take_bundle(),
             Default::default(),
+            Default::default(),
             Receipts::default(),
             1,
             Vec::new(),
@@ -885,6 +886,7 @@ mod tests {
         let outcome = ExecutionOutcome::new(
             state.take_bundle(),
             Default::default(),
+            Default::default(),
             Receipts::default(),
             2,
             Vec::new(),
@@ -957,6 +959,7 @@ mod tests {
 
         let outcome = ExecutionOutcome::new(
             init_state.take_bundle(),
+            Default::default(),
             Default::default(),
             Receipts::default(),
             0,
@@ -1109,8 +1112,14 @@ mod tests {
 
         let bundle = state.take_bundle();
 
-        let outcome =
-            ExecutionOutcome::new(bundle, Default::default(), Receipts::default(), 1, Vec::new());
+        let outcome = ExecutionOutcome::new(
+            bundle,
+            Default::default(),
+            Default::default(),
+            Receipts::default(),
+            1,
+            Vec::new(),
+        );
         let mut writer = UnifiedStorageWriter::from_database(&provider);
         writer
             .write_to_storage(outcome, OriginalValuesKnown::Yes)
@@ -1278,6 +1287,7 @@ mod tests {
         let outcome = ExecutionOutcome::new(
             init_state.take_bundle(),
             Default::default(),
+            Default::default(),
             Receipts::default(),
             0,
             Vec::new(),
@@ -1331,6 +1341,7 @@ mod tests {
         let outcome = ExecutionOutcome::new(
             state.take_bundle(),
             Default::default(),
+            Default::default(),
             Receipts::default(),
             1,
             Vec::new(),
@@ -1369,6 +1380,7 @@ mod tests {
         let base = ExecutionOutcome {
             bundle: BundleState::default(),
             traces: Default::default(),
+            tx_traces: Default::default(),
             receipts: vec![vec![Some(Receipt::default()); 2]; 7].into(),
             first_block: 10,
             requests: Vec::new(),
@@ -1435,6 +1447,7 @@ mod tests {
                     tx,
                     ExecutionOutcome::new(
                         state.bundle_state.clone(),
+                        Default::default(),
                         Default::default(),
                         Receipts::default(),
                         0,
@@ -1589,6 +1602,7 @@ mod tests {
         let mut test = ExecutionOutcome {
             bundle: present_state,
             traces: Default::default(),
+            tx_traces: Default::default(),
             receipts: vec![vec![Some(Receipt::default()); 2]; 1].into(),
             first_block: 2,
             requests: Vec::new(),

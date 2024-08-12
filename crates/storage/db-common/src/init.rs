@@ -207,6 +207,7 @@ pub fn insert_state<'a, 'b, DB: Database>(
         all_reverts_init,
         contracts.into_iter().collect(),
         Default::default(),
+        Default::default(),
         Receipts::default(),
         block,
         Vec::new(),

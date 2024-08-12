@@ -389,10 +389,12 @@ impl StorageInner {
             requests: block_execution_requests,
             gas_used,
             trace,
+            tx_traces,
         } = executor.executor(&mut db).execute((&block, U256::ZERO).into())?;
         let execution_outcome = ExecutionOutcome::new(
             state,
             trace.map_or_else(Vec::new, |f| vec![f]),
+            vec![tx_traces],
             receipts.into(),
             block.number,
             vec![block_execution_requests.into()],

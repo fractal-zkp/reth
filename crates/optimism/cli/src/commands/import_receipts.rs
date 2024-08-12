@@ -224,8 +224,14 @@ where
         // We're reusing receipt writing code internal to
         // `UnifiedStorageWriter::append_receipts_from_blocks`, so we just use a default empty
         // `BundleState`.
-        let execution_outcome =
-            ExecutionOutcome::new(Default::default(), receipts, first_block, Default::default());
+        let execution_outcome = ExecutionOutcome::new(
+            Default::default(),
+            Default::default(),
+            Default::default(),
+            receipts,
+            first_block,
+            Default::default(),
+        );
 
         let static_file_producer =
             static_file_provider.get_writer(first_block, StaticFileSegment::Receipts)?;

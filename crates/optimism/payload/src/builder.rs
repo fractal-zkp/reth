@@ -522,6 +522,7 @@ where
     let execution_outcome = ExecutionOutcome::new(
         db.take_bundle(),
         vec![db.take_execution_trace().expect("trace is always present")],
+        vec![],
         vec![receipts].into(),
         block_number,
         Vec::new(),

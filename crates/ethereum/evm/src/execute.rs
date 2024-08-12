@@ -31,7 +31,8 @@ use reth_revm::{
 };
 use revm_primitives::{
     db::{Database, DatabaseCommit},
-    BlockEnv, CfgEnvWithHandlerCfg, EVMError, EnvWithHandlerCfg, ResultAndState,
+    Account, Address, BlockEnv, CfgEnvWithHandlerCfg, EVMError, EnvWithHandlerCfg, HashMap,
+    ResultAndState,
 };
 
 #[cfg(not(feature = "std"))]
@@ -118,6 +119,7 @@ struct EthExecuteOutput {
     receipts: Vec<Receipt>,
     requests: Vec<Request>,
     gas_used: u64,
+    tx_traces: Vec<HashMap<Address, Account>>,
 }
 
 /// Helper container type for EVM with chain spec.
@@ -172,6 +174,7 @@ where
         // execute transactions
         let mut cumulative_gas_used = 0;
         let mut receipts = Vec::with_capacity(block.body.len());
+        let mut tx_traces = Vec::with_capacity(block.body.len());
         for (sender, transaction) in block.transactions_with_sender() {
             // The sum of the transaction’s gas limit, Tg, and the gas utilized in this block prior,
             // must be no greater than the block’s gasLimit.
@@ -201,6 +204,7 @@ where
                     error: Box::new(new_err),
                 }
             })?;
+            tx_traces.push(state.clone());
             evm.db_mut().commit(state);
 
             // append gas used
@@ -240,7 +244,7 @@ where
             vec![]
         };
 
-        Ok(EthExecuteOutput { receipts, requests, gas_used: cumulative_gas_used })
+        Ok(EthExecuteOutput { receipts, requests, gas_used: cumulative_gas_used, tx_traces })
     }
 }
 
@@ -381,7 +385,7 @@ where
     /// Returns an error if the block could not be executed or failed verification.
     fn execute(mut self, input: Self::Input<'_>) -> Result<Self::Output, Self::Error> {
         let BlockExecutionInput { block, total_difficulty } = input;
-        let EthExecuteOutput { receipts, requests, gas_used } =
+        let EthExecuteOutput { receipts, requests, gas_used, tx_traces } =
             self.execute_without_verification(block, total_difficulty)?;
 
         // NOTE: we need to merge keep the reverts for the bundle retention
@@ -390,6 +394,7 @@ where
         Ok(BlockExecutionOutput {
             state: self.state.take_bundle(),
             trace: self.state.take_execution_trace(),
+            tx_traces,
             receipts,
             requests,
             gas_used,
@@ -429,7 +434,7 @@ where
 
     fn execute_and_verify_one(&mut self, input: Self::Input<'_>) -> Result<(), Self::Error> {
         let BlockExecutionInput { block, total_difficulty } = input;
-        let EthExecuteOutput { receipts, requests, gas_used: _ } =
+        let EthExecuteOutput { receipts, requests, gas_used: _, tx_traces } =
             self.executor.execute_without_verification(block, total_difficulty)?;
 
         validate_block_post_execution(block, self.executor.chain_spec(), &receipts, &requests)?;
@@ -442,6 +447,9 @@ where
         if let Some(trace) = self.executor.state.take_execution_trace() {
             self.batch_record.save_execution_trace(trace);
         }
+
+        // save the transaction traces
+        self.batch_record.save_transaction_traces(tx_traces);
 
         // store receipts in the set
         self.batch_record.save_receipts(receipts)?;
@@ -460,6 +468,7 @@ where
         ExecutionOutcome::new(
             self.executor.state.take_bundle(),
             self.batch_record.take_execution_traces(),
+            self.batch_record.take_transaction_traces(),
             self.batch_record.take_receipts(),
             self.batch_record.first_block().unwrap_or_default(),
             self.batch_record.take_requests(),

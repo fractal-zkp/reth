@@ -7,7 +7,10 @@ use crate::{
 use reth_execution_errors::{BlockExecutionError, InternalBlockExecutionError};
 use reth_primitives::{Receipt, Receipts, Request, Requests};
 use reth_prune_types::{PruneMode, PruneModes, PruneSegmentError, MINIMUM_PRUNING_DISTANCE};
-use revm::db::states::{bundle_state::BundleRetention, ExecutionTrace};
+use revm::{
+    db::states::{bundle_state::BundleRetention, ExecutionTrace},
+    primitives::{Account, HashMap},
+};
 
 #[cfg(not(feature = "std"))]
 use alloc::vec::Vec;
@@ -22,6 +25,8 @@ pub struct BlockBatchRecord {
     prune_modes: PruneModes,
     /// The collection of `ExecutionTraces`.
     traces: Vec<ExecutionTrace>,
+    /// The collection of transaction traces for each block.
+    tx_traces: Vec<Vec<HashMap<Address, Account>>>,
     /// The collection of receipts.
     /// Outer vector stores receipts for each block sequentially.
     /// The inner vector stores receipts ordered by transaction number.
@@ -189,6 +194,16 @@ impl BlockBatchRecord {
     /// Returns all recorded execution traces.
     pub fn take_execution_traces(&mut self) -> Vec<ExecutionTrace> {
         core::mem::take(&mut self.traces)
+    }
+
+    /// Saves the transaction traces for the block.
+    pub fn save_transaction_traces(&mut self, tx_traces: Vec<HashMap<Address, Account>>) {
+        self.tx_traces.push(tx_traces);
+    }
+
+    /// Returns all recorded transaction traces.
+    pub fn take_transaction_traces(&mut self) -> Vec<Vec<HashMap<Address, Account>>> {
+        core::mem::take(&mut self.tx_traces)
     }
 }
 
