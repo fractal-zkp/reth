@@ -14,10 +14,7 @@ use reth_network_p2p::{
 use reth_payload_builder::PayloadBuilderHandle;
 use reth_payload_primitives::{PayloadAttributes, PayloadBuilderAttributes};
 use reth_payload_validator::ExecutionPayloadValidator;
-use reth_primitives::{
-    constants::EPOCH_SLOTS, BlockNumHash, BlockNumber, Head, Header, SealedBlock, SealedHeader,
-    B256,
-};
+use reth_primitives::{BlockNumHash, BlockNumber, Head, Header, SealedBlock, SealedHeader, B256};
 use reth_provider::{
     BlockIdReader, BlockReader, BlockSource, CanonChainTracker, ChainSpecProvider, ProviderError,
     StageCheckpointReader,
@@ -85,7 +82,7 @@ const MAX_INVALID_HEADERS: u32 = 512u32;
 ///
 /// This is the default threshold, the distance to the head that the tree will be used for sync.
 /// If the distance exceeds this threshold, the pipeline will be used for sync.
-pub const MIN_BLOCKS_FOR_PIPELINE_RUN: u64 = EPOCH_SLOTS;
+pub const MIN_BLOCKS_FOR_PIPELINE_RUN: u64 = u64::MAX;
 
 /// Represents a pending forkchoice update.
 ///
